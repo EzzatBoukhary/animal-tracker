@@ -67,7 +67,7 @@ app.post('/api/register', async (req, res, next) =>
     // incoming: login, password, first name, last name
     // outgoing: id, firstName, lastName, error
 
-    const { login, password, firstName, lastName } = req.body;
+    const { login, password, email, firstName, lastName } = req.body;
     var error = '';
     var userId = -1;
     var Id = -1
@@ -85,6 +85,7 @@ app.post('/api/register', async (req, res, next) =>
             const result = await db.collection('Users').insertOne({
                 Login: login,
                 Password: password,
+                Email: email,
                 FirstName: firstName,
                 LastName: lastName,
                 UserId: userId
@@ -97,6 +98,7 @@ app.post('/api/register', async (req, res, next) =>
         error = 'Internal server error';
     }
 
+    var ret = {error:error};
     res.status(error ? 400 : 201).json({ message: error ? error : 'User registered successfully', Id, error });
 }
 );
