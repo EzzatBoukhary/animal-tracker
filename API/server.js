@@ -6,7 +6,9 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
+
+//const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb+srv://theBeast:oLqLhnTj8I1gSbV0@cop4331.nhu8j.mongodb.net/?retryWrites=true&w=majority&appName=COP4331';
 
 const client = new MongoClient(url);
@@ -231,6 +233,23 @@ app.get('/api/searchPosts', async (req, res) => {
     } catch (error) {
         console.error('Error searching posts:', error);
         res.status(500).json({ error: 'Failed to search posts' });
+    }
+});
+
+app.delete('/api/deletePost/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const result = await db.collection('Posts').deleteOne({ _id: new ObjectId(postId) });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        res.status(200).json({ message: 'Post deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        res.status(500).json({ error: 'Failed to delete post' });
     }
 });
 
