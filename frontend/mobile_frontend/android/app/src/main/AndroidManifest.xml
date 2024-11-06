@@ -45,4 +45,7 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <!--added to access camera and photo library-->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'login_page.dart'; 
+import 'login_page.dart';
 import 'create_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
-// import 'registration_page.dart';   
-// import 'api_service.dart';
-
-
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -23,12 +22,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFFC904)),
           appBarTheme: AppBarTheme(
-            backgroundColor: const Color(0xFFFFC904), // AppBar color
+            backgroundColor: const Color(0xFFFFC904),
           ),
           bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            backgroundColor: const Color(0xFFFFC904), // BottomNavigationBar color
+            backgroundColor: const Color(0xFFFFC904),
           ),
-          scaffoldBackgroundColor: Colors.white, // Set default background color
+          scaffoldBackgroundColor: Colors.white,
           useMaterial3: true,
         ),
         home: Consumer<MyAppState>(
@@ -41,7 +40,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class MyAppState extends ChangeNotifier {
   bool _isLoggedIn = false;
 
@@ -52,23 +50,16 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
     _isLoggedIn = false;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -79,16 +70,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
-  
-
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -101,51 +84,43 @@ class _MyHomePageState extends State<MyHomePage> {
         page = Placeholder();
         break;
       default:
-        throw UnimplementedError('no widget for $selectedIndex');
+        throw UnimplementedError('No widget for $selectedIndex');
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('UCF Animal Tracker'),
-            backgroundColor: const Color(0xFFFFC904),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  // Navigate to profile page
-                },
-                icon: const Icon(Icons.account_circle),
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              SafeArea(
-                child: Expanded(
-                  child: Container(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    child: page,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: const Color(0xFFFFC904),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Posts'),
-              BottomNavigationBarItem(icon: Icon(Icons.create), label: 'Create Post'),
-              BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-            ],
-            onTap: (index) {
-              setState(() {
-                selectedIndex = index;
-              });
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: const Color(0xFFFFC904),
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Navigate to profile page
             },
+            icon: const Icon(Icons.account_circle),
           ),
-        );
-      },
+        ],
+      ),
+      body: SafeArea(
+        child: Container(
+          color: Theme.of(context).colorScheme.onPrimary,
+          child: page,
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFFFFC904),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Posts'),
+          BottomNavigationBarItem(icon: Icon(Icons.create), label: 'Create Post'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+        ],
+        currentIndex: selectedIndex,
+        onTap: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+        },
+      ),
     );
   }
 }
+

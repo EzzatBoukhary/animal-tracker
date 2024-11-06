@@ -1,9 +1,8 @@
-// registration_page.dart
-import 'package:provider/provider.dart';
+//import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'api_service.dart';
 import 'login_page.dart'; 
-import 'main.dart'; // Update this to the correct path where MyAppState is defined
+//import 'main.dart'; // Update this to the correct path where MyAppState is defined
 
 class RegistrationPage extends StatefulWidget {
   @override
