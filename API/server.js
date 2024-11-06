@@ -32,6 +32,16 @@ app.use((req, res, next) =>
 
 app.post('/api/login', async (req, res, next) =>
 {
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/login
+        Dropdown: POST
+        Headers: Content-type application/json
+        Raw:{
+                "login" : "HarpAA",
+                "password" : "password"
+            }
+    */
     // incoming: login, password
     // outgoing: id, firstName, lastName, error
 
@@ -67,6 +77,19 @@ async function getNextUserId()
 
 app.post('/api/register', async (req, res, next) =>
     {
+        /*
+        How to test on Postman
+        URl: http://localhost:5000/api/register
+        Dropdown: POST
+        Headers: Content-type application/json
+        Raw: {
+            "login" : "HarpAA",
+            "password" : "password",
+            "email" : "harper@test.com",
+            "firstName" : "Harp",
+            "lastName" : "Archambault"
+        }
+        */
         // incoming: login, password, first name, last name
         // outgoing: id, firstName, lastName, error
     
@@ -107,6 +130,20 @@ app.post('/api/register', async (req, res, next) =>
     );
 app.post('/api/create', async (req, res, next) =>
 {
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/create
+        Dropdown: POST
+        Headers: Content-type application/json
+        Raw: {
+            "login" : "HarperA",
+            "location" : "Student Union",
+            "photo" : "bird.img",
+            "description" : "I saw this bird outside the student union",
+            "animal" : "Bird"
+            }
+    */
+
     //incoming: userId, location, photo, description, animal
 
     const { userId, location, photo, description, animal} = req.body;
@@ -146,6 +183,14 @@ app.post('/api/create', async (req, res, next) =>
 });
 
 app.get('/api/getPosts', async (req, res) => {
+
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/getPosts
+        Dropdown: GET
+        Headers: Content-type application/json
+    */
+
     try {
         console.log("Received request to /api/getPosts"); // Log when the endpoint is hit
 
@@ -188,6 +233,14 @@ app.get('/api/getPosts', async (req, res) => {
 });
 
 app.get('/api/searchPosts', async (req, res) => {
+
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/searchPosts/?animal=(type in animal here)
+        Dropdown: GET
+        Headers: Content-type application/json
+    */
+
     const { animal } = req.query;
 
     // Log animalType and filter
@@ -237,6 +290,13 @@ app.get('/api/searchPosts', async (req, res) => {
 });
 
 app.delete('/api/deletePost/:postId', async (req, res) => {
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/deletePost/(type in _id number here)
+        Dropdown: DELETE
+        Headers: Content-type application/json
+    */
+
     const { postId } = req.params;
 
     try {
