@@ -1,17 +1,16 @@
 import PageTitle from '../components/PageTitle';
 import LoggedInName from '../components/LoggedInName';
-import Home from '../components/Home';
+import HomeListView from '../components/HomeListView';
 import Buttons from '../components/Buttons';
-const HomePage = () =>
+const ListViewPage = () =>
 {
 return(
     <div>
         <PageTitle />
         <LoggedInName />
         <Buttons />
-        <Home />
+        <HomeListView />
     </div>
 );
 }
-export default HomePage;
-
+export default ListViewPage;

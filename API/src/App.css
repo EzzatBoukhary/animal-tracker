@@ -41,6 +41,8 @@
   color: #888;
 }
 
+/*For grid view page*/
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -102,4 +104,42 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+/*For list view page*/
+
+.home-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.post {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.post-info {
+  margin-top: 0.5rem;
+}
+
+.post-info p {
+  margin: 0.3rem 0;
 }
