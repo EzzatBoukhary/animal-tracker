@@ -1,0 +1,23 @@
+.auth-page {
+    background-image: url('https://cdn.discordapp.com/attachments/1296265595742060605/1303490535461224448/Finalized_Login.png?ex=672bf1a9&is=672aa029&hm=db72231634798d980c7645c0140905d976fab08293c390540640450291c9f54c&');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .overlay {
+    background-color: rgba(0, 0, 0, 0.1); /* Adds a dark overlay */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+  
