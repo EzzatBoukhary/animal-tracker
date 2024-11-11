@@ -313,6 +313,23 @@ app.delete('/api/deletePost/:postId', async (req, res) => {
     }
 });
 
+app.get('/api/getUserPosts/:userId', async (req, res) => {
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/getUserPosts/(type in userId)
+        Dropdown: GET
+        Headers: Content-type application/json
+    */
+
+    try {
+        const { userId } = req.params;
+        const posts = await db.collection('Posts').find({ userId: Number(userId) }).toArray();
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching user posts' });
+    }
+});
+
 
 
 app.listen(5000); // start Node + Express server
