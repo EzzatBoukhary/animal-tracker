@@ -11,6 +11,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  MapController _mapController = MapController();
   List<Marker> _markers = [];
   String _selectedAnimal = ''; 
 
@@ -18,20 +19,23 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Map'),
-        actions: [
-          IconButton(
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Text('Filters'),
+            IconButton(
             icon: Icon(Icons.filter_list),
             onPressed: () {
               _showFilterOptions();
             },
           ),
-        ],
+          ],
+        ),
       ),
       body: Stack(
         children: [
           FlutterMap(
-            mapController: MapController(),
+            mapController: _mapController,
             options: MapOptions(
               initialCenter: LatLng(28.60221, -81.20031), // Default to San Francisco; replace as needed
               initialZoom: 15,
@@ -46,6 +50,16 @@ class _MapPageState extends State<MapPage> {
               ),
             ],
           ),
+          if(_markers.isEmpty)
+            Center(
+              child: Text(
+                "No markers available.",
+                style: TextStyle(
+                  color: Colors.black, 
+                  fontSize: 18,
+                ),
+              ),
+            )
         ],
       ),
     );
@@ -117,9 +131,11 @@ class _MapPageState extends State<MapPage> {
   void _showDetailsBottomSheet(Map<String, dynamic> post) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(16.0),
+          color: Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -143,6 +159,8 @@ class _MapPageState extends State<MapPage> {
 
 
   void _hideDetailsBottomSheet() {
-    Navigator.of(context).pop();
+    if (Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
   }
 }

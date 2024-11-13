@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'api_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class PostsPage extends StatefulWidget {
   @override
