@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_frontend/map_page.dart';
+import 'package:mobile_frontend/posts_page.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 import 'create_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
+//import 'package:geolocator/geolocator.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -70,19 +73,26 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
+  // Method to update selected index
+  void updateSelectedIndex(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = Placeholder();
-        break;
+        page = PostsPage();
+        //break;
       case 1:
         page = CreatePage();
-        break;
+        //break;
       case 2:
-        page = Placeholder();
-        break;
+        page = MapPage();
+        //break;
       default:
         throw UnimplementedError('No widget for $selectedIndex');
     }
@@ -109,14 +119,14 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFFFFC904),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Posts'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Posts'),
           BottomNavigationBarItem(icon: Icon(Icons.create), label: 'Create Post'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
         ],
         currentIndex: selectedIndex,
         onTap: (index) {
           setState(() {
-            selectedIndex = index;
+            selectedIndex = index; // Update selected index here
           });
         },
       ),

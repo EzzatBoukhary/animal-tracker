@@ -1,4 +1,3 @@
-// login_page.dart
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'api_service.dart';
@@ -19,26 +18,26 @@ class _LoginPageState extends State<LoginPage> {
     String username = _usernameController.text;
     String password = _passwordController.text;
 
-    print('Username: $username, Password: $password'); // Log the login credentials
+    print('Username: $username, Password: $password'); // Log credentials
 
     try {
       var response = await apiService.login(username, password);
-      print('Response: $response'); // Log the API response
-      
-      // Check if the response has an error and that it's not empty
-      if (response['error'] == null || response['error'].isEmpty) { // Successful login
-        Provider.of<MyAppState>(context, listen: false).login(); // Update app state
+      print('Response: $response'); // Log response data
+
+      if (response.containsKey('error') && (response['error'] == null || response['error'].isEmpty)) {
+        print('Login successful');
+        Provider.of<MyAppState>(context, listen: false).login();
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => MyHomePage(title: 'UCF Animal Tracker')),
         );
       } else {
-        print('Error: ${response['error']}'); // Log the error message
+        print('Login failed with error: ${response['error']}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${response['error']}')),
         );
       }
     } catch (e) {
-      print('Login failed: $e'); // Log any exception that occurs
+      print('Login exception: $e'); // Catch exceptions properly
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred during login: $e')),
       );
