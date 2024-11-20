@@ -1,17 +1,38 @@
 import 'package:flutter/material.dart';
-//import 'package:http/http.dart' as http;
-//import 'dart:convert';
 import 'api_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'dart:convert';
 
-class PostsPage extends StatefulWidget {
-  @override
-  _PostsPageState createState() => _PostsPageState();
+
+String timeAgo(DateTime postDate) {
+  final now = DateTime.now();
+  final difference = now.difference(postDate);
+
+  if (difference.inMinutes < 60) {
+    return '${difference.inMinutes} mins ago';
+  } else if (difference.inHours < 24) {
+    return '${difference.inHours} hours ago';
+  } else if (difference.inDays < 30) {
+    return '${difference.inDays} days ago';
+  } else if (difference.inDays < 365) {
+    final months = (difference.inDays / 30).floor();
+    return '$months months ago';
+  } else {
+    final years = (difference.inDays / 365).floor();
+    return '$years years ago';
+  }
 }
 
-class _PostsPageState extends State<PostsPage> {
+class PostsPage extends StatefulWidget {
+  const PostsPage({super.key});
+
+
+  @override
+  PostsPageState createState() => PostsPageState();
+}
+
+class PostsPageState extends State<PostsPage> {
   List<dynamic> posts = [];
   int currentPage = 1;
   bool isLoading = false;
@@ -28,12 +49,8 @@ class _PostsPageState extends State<PostsPage> {
     setState(() { isLoading = true; });
 
     try {
-      final newPosts = await ApiService.fetchPosts(currentPage, 5);
-
-      // for (var post in newPosts) {
-      //   final firstName = await ApiService.getUserFirstName(post['userId']);
-      //   post['firstName'] = firstName;  // Add firstName to the post
-      // }
+      ApiService apiService = ApiService();
+      final newPosts = await apiService.fetchPosts(currentPage,8);
 
       setState(() {
         posts.addAll(newPosts);
@@ -44,7 +61,7 @@ class _PostsPageState extends State<PostsPage> {
       if (mounted) {
         setState(() { isLoading = false; });
       }
-      print('Error fetching posts: $e');
+      // print('Error fetching posts: $e');
     }
   }
 
@@ -55,152 +72,327 @@ class _PostsPageState extends State<PostsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification scrollInfo) {
-        if (!isLoading && scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-          fetchPosts();
-        }
-        return true;
-      },
-      child: ListView.builder(
-        itemCount: posts.length + 1,
-        itemBuilder: (context, index) {
-          if (index < posts.length) {
-            final post = posts[index];
-            final isSelected = selectedIndex == index;
-
-            return GestureDetector(
-              onTap: (){ //think about if i want this to be double tap or stay single tap
-                setState(() {
-                  selectedIndex = isSelected ? null : index;
-                });
-              }, 
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 200),
-                margin: EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                padding: EdgeInsets.all(10),
-                height: isSelected ? 300 : 125,
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xffFFC904) : const Color(0x33FFC904), // Change background color based on selection
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    width: 1.0,
-                    style: BorderStyle.solid 
-                  ) // Optional: to give it rounded corners
-                ),
-                child: Row(
-                  children: [
-                    AnimatedContainer(
-                      duration: Duration(microseconds: 250),
-                      width: isSelected ? 250 : 75,
-                      height: isSelected ? 250 : 75,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4.0),
-                        child: FadeInImage.assetNetwork(
-                          placeholder: 'loading.png',
-                          image: post['photo'],
-                          fit: BoxFit.fitHeight
-                        ),
-                      ) 
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Padding(                        
-                        padding: const EdgeInsets.all(1.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              title: Text(
-                                '${post['username']} - ${post['animal']}',
-                                style: TextStyle(fontSize: isSelected ? 24 : 16),
-                              ),
-                              subtitle: Text(
-                                post['description'],
-                                maxLines: isSelected ? 10 : 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-
-                              /*
-                              UNCOMMENT BELOW LINES IF DECIDED TO ADD TEST UNDER ICON BUTTON
-                              */
-                              trailing: //Column(
-                                // mainAxisAlignment: MainAxisAlignment.start,
-                                // children: [
-                                  IconButton(
-                                    icon: Icon(Icons.location_pin),
-                                    onPressed: (){
-                                      final latitude = post['location']['latitude'];
-                                      final longitude = post['location']['longitude'];
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        builder: (context) => MapBottomSheet(latitude: latitude, longitude: longitude),
-                                      );
-                                      //add map function call here
-                                    },
-                                  ),
-                                  // SizedBox(height: 4),  // Optional: Adds space between icon and text
-                                  // Text(
-                                  //   'Location', // Text under the icon
-                                  //   style: TextStyle(fontSize: 10),  // Adjust font size if necessary
-                                  // ),
-                                // ],
-                              // ),
-                            ),
-                          ],
-                        )
-                      ), 
-                    ),
-                  ],
-                ),
-              ),
-            );
-          } else {
-            return Center(
-              child: isLoading ? CircularProgressIndicator() : SizedBox.shrink(),
-            );
+    return Container(
+      color: Colors.black,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (!isLoading && scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+            fetchPosts();
           }
+          return true;
         },
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // Number of posts per row
+            crossAxisSpacing: 8.0, // Space between columns
+            mainAxisSpacing: 8.0, // Space between rows
+            childAspectRatio: 0.9, // Keeps the posts square (150x150)
+          ),
+          itemCount: posts.length + 1,
+          itemBuilder: (context, index) {
+            if (index < posts.length) {
+              final post = posts[index];
+      
+              return GestureDetector(
+                onTap: (){ //think about if i want this to be double tap or stay single tap
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (BuildContext context) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
+                        child: PostDetailsBottomSheet(post: post), // Your existing content here
+                      );
+                    },
+                  );
+                }, 
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(10),
+                    // border: Border.all(width: 1.0, color: Colors.grey[700]!),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 3,
+                            color: Colors.white,
+                          ),
+                          borderRadius: BorderRadius.circular(65.0),
+                          color: Colors.white,
+                        ),
+                       child: ClipRRect(
+                        borderRadius: BorderRadius.circular(62.0),
+                        child: Builder(
+                          builder: (context) {
+                            try {
+                              // Remove metadata prefix if it exists
+                              String base64String = post['photo'];
+                              if (base64String.contains(',')) {
+                                base64String = base64String.split(',').last;
+                              }
+
+                              // Decode and display the image
+                              return Image.memory(
+                                Base64Decoder().convert(base64String),
+                                fit: BoxFit.cover,
+                                width: 150,
+                                height: 150,
+                              );
+                            } catch (e) {
+                              // Handle errors gracefully
+                              return Center(
+                                child: Text(
+                                  'Image failed to load',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+
+                      ),
+                      SizedBox(height: 1),
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                          children: <TextSpan>[
+                            TextSpan(text: 
+                              'Spotted:', 
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                            TextSpan(text: 
+                              ' ', 
+                            ),
+                            TextSpan(text: 
+                              timeAgo(DateTime.parse(post['postedDate'])),
+                            ),
+                          ]
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            } else {
+              return Center(
+                child: isLoading ? CircularProgressIndicator() : SizedBox.shrink(),
+              );
+            }
+          },
+        ),
       ),
     );
   }
 }
 
-class MapBottomSheet extends StatelessWidget {
-  final double latitude;
-  final double longitude;
+class PostDetailsBottomSheet extends StatelessWidget {
+  final dynamic post;
 
-  MapBottomSheet({required this.latitude, required this.longitude});
+  const PostDetailsBottomSheet({super.key, required this.post});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.5, // Adjust the height as needed
-      child: FlutterMap(
-        mapController: MapController(),
-        options: MapOptions(
-          initialCenter: LatLng(latitude, longitude),
-          initialZoom: 15.0,
+    final latitude = post['location']['latitude'];
+    final longitude = post['location']['longitude'];
+
+    
+
+    return SingleChildScrollView(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
         ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            top: 16.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
           ),
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: LatLng(latitude, longitude),
-                child: Icon(
-                  Icons.location_pin,
-                  size: 40,
-                  color: Colors.red,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(62.0),
+                  child: Builder(
+                    builder: (context) {
+                      try {
+                        // Remove metadata prefix if it exists
+                        String base64String = post['photo'];
+                        if (base64String.contains(',')) {
+                          base64String = base64String.split(',').last;
+                        }
+
+                        // Decode and display the image
+                        return Image.memory(
+                          Base64Decoder().convert(base64String),
+                          fit: BoxFit.cover,
+                          width: 300,
+                          height: 300,
+                        );
+                      } catch (e) {
+                        // Handle errors gracefully
+                        return Center(
+                          child: Text(
+                            'Image failed to load',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+
+              ),
+              SizedBox(height: 16),
+              //spotted on and by who
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20.0,
+                  ),
+                  children: <TextSpan>[
+                    TextSpan(text: 
+                      'Spotted:', 
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                    TextSpan(text: 
+                      ' ',
+                    ),
+                    TextSpan(text: 
+                      timeAgo(DateTime.parse(post['postedDate'])),
+                    ),
+                    TextSpan(text: 
+                      ' by ${post['username']}'
+                    )
+                  ],
                 ),
               ),
+              SizedBox(height: 16),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20.0,
+                  ),
+                  children: <TextSpan>[
+                    TextSpan(text: 
+                      'Animal Name:', 
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                    TextSpan(text: 
+                      ' ${post['animal']}'
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Description:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                        decoration: TextDecoration.underline,
+                      ), 
+                    ),
+                    SizedBox(height: 16),
+                    Container(
+                      width: 300,
+                      padding: EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.grey.shade200,
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 3,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          post['description'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Map Location:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        decoration: TextDecoration.underline,
+                      ), 
+                    ),
+                    SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 3,
+                        ),
+                      ),
+                      height: 300,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: FlutterMap(
+                          mapController: MapController(),
+                          options: MapOptions(
+                            initialCenter: LatLng(latitude, longitude),
+                            initialZoom: 15.0,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(latitude, longitude),
+                                  child: Icon(
+                                    Icons.location_pin,
+                                    size: 40,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
             ],
           ),
-        ], 
+        ),
       ),
     );
   }

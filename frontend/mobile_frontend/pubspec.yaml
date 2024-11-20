@@ -29,6 +29,8 @@ dependencies:
   flutter_map_location_marker: any
   flutter_spinkit: ^5.0.0
   cached_network_image: ^3.2.0
+  mockito: ^5.4.4
+
 
 dev_dependencies:
   flutter_test:
@@ -40,5 +42,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/loading.png
+    - assets/background.png
 
 

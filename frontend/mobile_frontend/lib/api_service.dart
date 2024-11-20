@@ -3,7 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5000/api'; //CHANGE THIS BEFORE MOVING TO SERVER!!!
+  final String baseUrl= 'http://10.0.2.2:5000/api'; //CHANGE THIS BEFORE MOVING TO SERVER!!!
+  // http.Client client; //used for testing
+  
+  // ApiService({String? baseURL = 'http://localhost:5000/api', http.Client? client}) 
+  //   : baseUrl = baseURL = 'http://localhost:5000/api',
+  //     client = client ?? http.Client();
 
   // Helper function to load user data from SharedPreferences
   Future<Map<String, String?>> loadUserData() async {
@@ -46,8 +51,8 @@ class ApiService {
       }),
     );
 
-    print('Login Response Status: ${response.statusCode}');
-    print('Login Response Body: ${response.body}');
+    // print('Login Response Status: ${response.statusCode}');
+    // print('Login Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -108,23 +113,52 @@ class ApiService {
         }),
       );
 
-      print("Response Status: ${response.statusCode}");
-      print("Response Body: ${response.body}");
+      // print("Response Status: ${response.statusCode}");
+      // print("Response Body: ${response.body}");
 
       if (response.statusCode != 201 && response.statusCode != 200) {
         throw Exception('Failed to submit data');
       }
     } catch (e) {
       // Print error message for better debugging
-      print("Error in API call: $e");
+      // print("Error in API call: $e");
       rethrow;  // Re-throw the error to handle it in the calling function
     }
   }
 
   //get all posts (no search involved) from database
-  static Future<List<dynamic>> fetchPosts(int page, int limit) async {
+  // Future<List<Map<String, dynamic>>> fetchPosts(int page, int limit) async {
+  //   final response = await http.get(
+  //     Uri.parse('your-api-endpoint?page=$page&limit=$limit'),
+  //     headers: {'Content-Type': 'application/json'},
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     final data = json.decode(response.body);
+  //     final fetchedPosts = data['posts'] as List;
+
+  //     // Decode images and add them to the post objects
+  //     List<Map<String, dynamic>> processedPosts = [];
+  //     for (var post in fetchedPosts) {
+  //       if (post['photo'] != null && post['photo'].startsWith('data:image')) {
+  //         final base64String = post['photo'].split(',').last; // Strip prefix
+  //         final imageBytes = base64Decode(base64String);
+
+  //         // Add the decoded image to a new field in the post
+  //         post['decodedPhoto'] = imageBytes;
+  //       }
+  //       processedPosts.add(post);
+  //     }
+
+  //     return processedPosts;
+  //   } else {
+  //     throw Exception('Failed to load posts');
+  //   }
+  // }
+
+  Future<List<dynamic>> fetchPosts(int page, int limit) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/getPosts?page=$page&limit=$limit'),
+      Uri.parse('$baseUrl/getPostsMobile?page=$page&limit=$limit'),
       headers: {'Content-Type': 'application/json'},
     );
     
@@ -137,7 +171,7 @@ class ApiService {
   }
 
   //search for selected animals
-  static Future<List<dynamic>> fetchFilteredPosts(String? animal) async {
+  Future<List<dynamic>> fetchFilteredPosts(String? animal) async {
     final response = await http.get(
       Uri.parse('$baseUrl/searchPosts?animal=$animal'), 
       headers: {'Content-Type': 'application/json'}
@@ -148,11 +182,11 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        print('Failed to load posts: ${response.body}');
+        // print('Failed to load posts: ${response.body}');
         return [];
       }
     } catch (error) {
-      print('Error fetching posts: $error');
+      // print('Error fetching posts: $error');
       return [];
     }
   }

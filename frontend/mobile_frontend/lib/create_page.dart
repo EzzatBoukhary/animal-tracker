@@ -1,30 +1,46 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
-//import 'package:mobile_frontend/main.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'api_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:typed_data';
+//import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 
 final apiService = ApiService();
 
 class CreatePage extends StatefulWidget {
+  const CreatePage({super.key});
+
   @override
   State<CreatePage> createState() => _CreatePageState();
 }
 
 class _CreatePageState extends State<CreatePage> {
+  final MapController _mapController = MapController();
+  final LatLng _initialPosition = const LatLng(28.60221, -81.20031);
   bool _isLoading = false;
   String _message = '';
   String? _animalType;
   String? _description;
   LatLng? _selectedCoordinates;
   String? _base64Image;
-  TextEditingController _descriptionController = TextEditingController(); // Clear the description text field
+  bool _showValidationError = true;
+  final TextEditingController _descriptionController = TextEditingController(); // Clear the description text field
+
+  void onLocationSelected(LatLng coordinates) {
+    setState(() {
+      _selectedCoordinates = coordinates;
+    });
+
+    _mapController.move(coordinates, 14); // Optional: To move the map to the selected location
+    // print("Updated Coordinates: $_selectedCoordinates");
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -40,6 +56,11 @@ class _CreatePageState extends State<CreatePage> {
     } catch (e) {
       _showErrorDialog("Unable to access the camera.");
     }
+  }
+
+  Uint8List? _decodeImage(String? base64Image) {
+    if (base64Image == null) return null;
+    return base64Decode(base64Image.replaceFirst(RegExp(r'^data:image/\w+;base64,'), ''));
   }
 
   Future<void> _convertImageToBase64(XFile pickedFile) async {
@@ -58,13 +79,16 @@ class _CreatePageState extends State<CreatePage> {
   }
 
   Future<void> _submitData() async {
-    if (_animalType == null || _description == null || _selectedCoordinates == null) {
-      _showErrorDialog("Please complete all fields before submitting.");
+    if (_animalType == null || _description == null || _selectedCoordinates == null || _base64Image == null) {
+      setState(() {
+        _showValidationError = true; // Show validation error
+      });
       return;
     }
 
     setState(() {
       _isLoading = true;
+      _showValidationError = false; // Hide validation error if all fields are valid
       _message = '';
     });
 
@@ -168,117 +192,486 @@ class _CreatePageState extends State<CreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Animal Type:', style: TextStyle(fontSize: 16)),
-          DropdownButtonFormField<String>(
-            value: _animalType,
-            items: <String>['Cat', 'Racoon', 'Deer', 'Bird', 'Mammal', 'Reptile', 'Amphibian']
-                .map((String value) => DropdownMenuItem<String>(value: value, child: Text(value)))
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                _animalType = value;
-              });
-            },
-            decoration: InputDecoration(border: OutlineInputBorder()),
-          ),
-          SizedBox(height: 16),
-
-          Text('Description:', style: TextStyle(fontSize: 16)),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Description...',
-            ),
-            onChanged: (value) => _description = value,
-          ),
-          SizedBox(height: 16),
-
-          ElevatedButton.icon(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Upload Image"),
-                    content: Text("Choose a source"),
-                    actions: [
-                      TextButton(
-                        child: Text("Camera"),
-                        onPressed: () {
-                          _pickImage(ImageSource.camera);
-                          Navigator.of(context).pop();
-                        },
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //Image handeling
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16.0),
                       ),
-                      TextButton(
-                        child: Text("Gallery"),
-                        onPressed: () {
-                          _pickImage(ImageSource.gallery);
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
+                    ),
+                    backgroundColor: Colors.transparent, // Makes the background transparent so we can use a custom color
+                    builder: (BuildContext context) {
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: 150),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Change this to your desired color
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16.0),
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFC904),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        _pickImage(ImageSource.gallery);
+                                        Navigator.of(context).pop();
+                                      },
+                                      icon: Icon(
+                                        Icons.photo_library, 
+                                        size: 40, 
+                                      ),
+                                      tooltip: 'Gallery', // Tooltip for accessibility
+                                    ),
+                                  ),
+                                  Text(
+                                    'UPLOAD',
+                                    style: TextStyle(
+                                      fontFamily: 'Koulen',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'IMAGE',
+                                    style: TextStyle(
+                                      fontFamily: 'Koulen',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),                              
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFC904),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        _pickImage(ImageSource.camera);
+                                        Navigator.of(context).pop();
+                                      },
+                                      icon: Icon(
+                                        Icons.photo_camera, 
+                                        size: 40, 
+                                      ),
+                                      tooltip: 'Camera', // Tooltip for accessibility
+                                    ),
+                                  ),
+                                  Text(
+                                    'CAPTURE',
+                                    style: TextStyle(
+                                      fontFamily: 'Koulen',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),  
+                                  ),
+                                  Text(
+                                    'IMAGE',
+                                    style: TextStyle(
+                                      fontFamily: 'Koulen',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),  
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-            icon: Icon(Icons.photo_camera),
-            label: Text('Upload Picture'),
-          ),
-          SizedBox(height: 16),
-
-          if (_base64Image != null)
-            Image.memory(
-              base64Decode(_base64Image!.replaceFirst(RegExp(r'^data:image/\w+;base64,'), '')),
-              height: 150,
+                child: Container(
+                  height: 200,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(16.0),
+                    border: Border.all(color: Colors.grey),
+                    image: _base64Image != null
+                        ? DecorationImage(
+                            image: MemoryImage(_decodeImage(_base64Image)!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: _base64Image == null ? Icon(
+                    Icons.create_rounded,
+                      color: Colors.grey,
+                      size: 50.0,
+                    )
+                    : Align(
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.white.withOpacity(0.7),
+                        size: 40.0,
+                      ),
+                    ),
+                  ),
+                ),
             ),
-
-          SizedBox(height: 16),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                onPressed: _getCurrentLocation,
-                child: Text('Use Current Location'),
+            SizedBox(height: 16),
+      
+            //animal drop down selection
+            //Text('Animal Type:', style: TextStyle(fontSize: 16)),
+            Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: DropdownButtonFormField<String>(
+                  value: _animalType,
+                  hint: Text('Select Your Animal...'),
+                  items: <String>['Cat', 'Racoon', 'Deer', 'Bird', 'Mammal', 'Reptile', 'Amphibian']
+                      .map((String value) => DropdownMenuItem<String>(
+                        value: value, 
+                        child: Text(value)
+                      ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _animalType = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(60),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,// Set the background color
+                  ),
+                  dropdownColor: Colors.white,
+                  isExpanded: false,
+                ),
               ),
-              ElevatedButton(
-                onPressed: () => _showMapModal(context),
-                child: Text('Pick on Map'),
+            ),
+            SizedBox(height: 16),
+      
+            //location selection
+            Center(
+              child: SizedBox(
+                width:MediaQuery.of(context).size.width * 0.8,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Show the bottom sheet with the two buttons
+                    showModalBottomSheet(
+                      context: context,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16.0),
+                        ),
+                      ),
+                      backgroundColor: Colors.transparent, // Makes the background transparent for customization
+                      builder: (BuildContext context) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Background color for the bottom sheet
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16.0),
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min, // To fit the content's height
+                            children: [
+                              SizedBox(height: 16.0),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _getCurrentLocation();
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFC904),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      color: Colors.black,
+                                    ),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      'Use My Location',
+                                      style: TextStyle(
+                                        fontFamily: 'Kreon',
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16.0), // Adds space between the buttons
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _showMapModal(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFC904),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.map_outlined,
+                                      color: Colors.black,
+                                    ),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      'Select From Map',
+                                      style: TextStyle(
+                                        fontFamily: 'Kreon',
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16.0),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                  ),
+                  child: Text(
+                    'Select Your Location',
+                    style: 
+                      TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'Kreon',
+                        fontWeight: FontWeight.w400,
+                      ),
+                  ),
+                ),
               ),
-            ],
-          ),
-          SizedBox(height: 16),
+            ),
+            SizedBox(height: 16),
+      
+            Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: TextField(
+                  controller: _descriptionController,
+                  maxLines: 4,
+                  maxLength: 150,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) {
+                      return Container(
+                        transform: Matrix4.translationValues(0, -30, 0),
+                        child: Text(
+                          "$currentLength/$maxLength",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      );
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    hintText: 'Enter Animal Description...',
+                    filled: true,  // Enable background color
+                    fillColor: Colors.white, 
+              
+                  ),
+                  onChanged: (value) => _description = value,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
 
-          _isLoading ? Center(child: CircularProgressIndicator(),) : ElevatedButton(
-              onPressed: () async { 
-                await _submitData();
-
-                //update selected index and return user to post page
-              },
-              child: Text('Submit'),
-          ),
-        ],
+            //SUBMIT BUTTON
+            Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                width: MediaQuery.of(context).size.width * 0.8,
+                padding: EdgeInsets.all(3),
+                child: _isLoading 
+                  ? CircularProgressIndicator() 
+                  : ElevatedButton(
+                    onPressed: () async { 
+                      await _submitData();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFC904),
+                      padding: EdgeInsets.all(10),
+                    ),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(
+                      fontFamily: 'Kreon',
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            
+            SizedBox(height: 16),
+            if (_showValidationError) // Show validation message
+              Center(
+                child: Text(
+                  '***A photo, location, and description must be selected***',
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ),
+            SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
   void _showMapModal(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double bottomSheetHeight = screenHeight * 0.8;
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return SizedBox(
-          height: 400,
-          child: MapPicker(onLocationSelected: (LatLng coordinates) {
-            setState(() => _selectedCoordinates = coordinates);
-            Navigator.pop(context);
-          }),
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
+            ),
+          ),
+          
+          height: bottomSheetHeight,
+          child: Column(
+            children: [
+              SizedBox(height: 16,),
+              Center(
+                child: Text(
+                  'Tap to Drop a Pin',
+                  style: TextStyle(
+                    fontFamily: 'Kreon',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              SizedBox(height: 4,),
+              //map container
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black,
+                ),
+                padding: EdgeInsets.all(3),
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: bottomSheetHeight * .8,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: FlutterMap(
+                    key: ValueKey(_selectedCoordinates),
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: _initialPosition,
+                      initialZoom: 15.0,
+                      onTap: (_, latlng) {
+                        onLocationSelected(latlng);
+                        _mapController.move(latlng, 15.0);
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          if (_selectedCoordinates != null)
+                            Marker(
+                              width: 40,
+                              height: 40,
+                              point: _selectedCoordinates!,
+                              child: Icon(
+                               Icons.location_pin,
+                                size: 40,
+                                color: Colors.red,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 8,),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: EdgeInsets.all(1),
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // print('Updating _selectedCoordinates and navigating back..');
+                      if(mounted){
+                        setState(() {
+                          onLocationSelected(_selectedCoordinates!);
+                        });
+                        Future.delayed(Duration(milliseconds: 300), (){
+                          if (mounted) Navigator.pop(context);
+                        });
+                      }
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFC904),
+                    ),
+                    child: Text(
+                      'Confirm',
+                      style: TextStyle(
+                        fontFamily: 'Kreon',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -286,80 +679,3 @@ class _CreatePageState extends State<CreatePage> {
 }
 
 
-class MapPicker extends StatefulWidget {
-  final Function(LatLng) onLocationSelected;
-
-  MapPicker({required this.onLocationSelected});
-
-  @override
-  MapPickerState createState() => MapPickerState();
-}
-
-class MapPickerState extends State<MapPicker> {
-  final LatLng _initialPosition = const LatLng(28.60221, -81.20031);
-  late LatLng _selectedPosition;
-
-  @override
-  void initState()  {
-    super.initState();
-    _selectedPosition = _initialPosition;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          FlutterMap(
-            mapController: MapController(),
-            options: MapOptions(
-              initialCenter: _initialPosition,
-              initialZoom: 15.0,
-              onTap: (tapPosition, point) {
-                setState(() {
-                  _selectedPosition = LatLng(point.latitude, point.longitude);
-                });
-              },
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: _selectedPosition,
-                    child: Icon(
-                      Icons.location_pin,
-                      size: 40,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              child: Icon(Icons.check),
-              onPressed: () {
-                print('Updating _selectedPosition and navigating back...');
-                if (mounted) {
-                  setState(() {
-                    widget.onLocationSelected(_selectedPosition);
-                  });
-                  Future.delayed(Duration(milliseconds: 300), () {
-                    // ignore: use_build_context_synchronously
-                    if (mounted) Navigator.pop(context);
-                  });
-                }
-              }
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
