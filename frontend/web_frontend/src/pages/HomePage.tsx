@@ -1,17 +1,13 @@
-import PageTitle from '../components/PageTitle';
-import LoggedInName from '../components/LoggedInName';
 import Home from '../components/Home';
-import Buttons from '../components/Buttons';
-const HomePage = () =>
-{
-return(
-    <div>
-        <PageTitle />
-        <LoggedInName />
-        <Buttons />
-        <Home />
-    </div>
-);
+import SidebarWithHeader from '../components/SidebarWithHeader';
+const HomePage = () => {
+    return (
+        <div>
+            <SidebarWithHeader title={'Posts'}>
+                <Home />
+            </SidebarWithHeader>
+        </div>
+    );
 }
 export default HomePage;
 

@@ -1,96 +1,139 @@
 import React, { useEffect, useState } from 'react';
-
-type Post = {
-    username: string;
-    location: { latitude: number; longitude: number };
-    photo: string;
-    description: string;
-    animal: string;
-    postedDate: string;
-};
+import { Box, Grid, Image, Text, useDisclosure, Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Post } from '../types';
+import PostModal from '../components/PostModal';
+import Filters from '../components/Filters';
+import { formatPostedDate } from '../utils/dateUtils';
 
 const Home: React.FC = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [searchQuery, setSearchQuery] = useState<string>(''); 
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null); 
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const response = await fetch(`http://localhost:5000/api/getPosts`);
-                const data = await response.json();
-                setPosts(data);
-            } catch (error) {
-                console.error('Error fetching posts:', error);
-            }
-        };
+  const isSticky = useBreakpointValue({ base: false, md: true });
 
-        fetchPosts();
-    }, []);
+  const animalFilters = ['Squirrel', 'Cat', 'Bird', 'Rabbit', 'Elephant', 'Lion', 'Tiger'];
 
-    const openPopup = (post: Post) => {
-        setSelectedPost(post);
-    };
-
-    const closePopup = () => {
-        setSelectedPost(null);
-    };
-
-    const searchPosts = async (animal: string) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/searchPosts?animal=${animal}`);
-            const data = await response.json();
-            setPosts(data); // Update your posts state with the filtered posts
-        } catch (error) {
-            console.error('Error searching posts:', error);
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        let url = 'http://localhost:5000/api/getPosts';
+        if (selectedAnimals.length > 0) {
+          const animalsQuery = selectedAnimals.join(',');
+          url += `?animals=${encodeURIComponent(animalsQuery)}`;
         }
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch posts');
+        const data = await response.json();
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
-    function viewList(event:any) : void
-    {
-        event.preventDefault();
-        window.location.href = '/list';
-    };
+    fetchPosts();
+  }, [selectedAnimals]);
 
-    return (
-        <div>
+  const openModal = (post: Post) => {
+    setSelectedPost(post);
+    onOpen();
+  };
 
-            <input
-                type="text"
-                placeholder="Search by animal type"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button onClick={() => searchPosts(searchQuery)}>Search</button>
-            <button type="button" id="gridView" className="buttons"
-                onClick={viewList}> Switch to list </button>
+  const closeModal = () => {
+    setSelectedPost(null);
+    onClose();
+  };
 
-            <h1>Photo Feed</h1>
-            <div className="grid">
-                {posts.map(post => (
-                    <div key={post._id} className="grid-item" onClick={() => openPopup(post)}>
-                        <img src={post.photo} alt={post.description} className="photo" />
-                    </div>
-                ))}
-            </div>
+  const handleSelectFilter = (animal: string) => {
+    if (!selectedAnimals.includes(animal)) {
+      setSelectedAnimals([...selectedAnimals, animal]);
+    }
+  };
 
-            {selectedPost && (
-                <div className="popup-overlay" onClick={closePopup}>
-                    <div className="popup" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-button" onClick={closePopup}>X</button>
-                        <img src={selectedPost.photo} alt={selectedPost.description} className="popup-photo" />
-                        <div className="popup-details">
-                            <p><strong>Location:</strong> Lat {selectedPost.location.latitude}, Lng {selectedPost.location.longitude}</p>
-                            <p><strong>Caption:</strong> {selectedPost.description}</p>
-                            <p><strong>Animal Type:</strong> {selectedPost.animal}</p>
-                            <p><strong>Date:</strong> {new Date(selectedPost.postedDate).toLocaleDateString()}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+  const handleDeselectFilter = (animal: string) => {
+    setSelectedAnimals(selectedAnimals.filter((a) => a !== animal));
+  };
+
+  const handleClearFilters = () => {
+    setSelectedAnimals([]);
+  };
+
+  return (
+    <Flex p={4} minH="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Box
+        w={{ base: 'full', md: '200px' }}
+        mr={{ base: 0, md: 4 }}
+        mb={{ base: 4, md: 0 }}
+        position={isSticky ? 'sticky' : 'static'}
+        top={isSticky ? '86px' : undefined}
+        alignSelf="start"
+      >
+        <Filters
+          animals={animalFilters}
+          selectedAnimals={selectedAnimals}
+          onSelect={handleSelectFilter}
+          onDeselect={handleDeselectFilter}
+          onClear={handleClearFilters}
+        />
+      </Box>
+
+      <Box flex="1">
+        {posts.length === 0 ? (
+          <Text>No posts found for the selected filters.</Text>
+        ) : (
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
+            {posts.map((post) => (
+
+              // Post item box
+              <Box
+                key={post._id}
+                borderWidth="1px"
+                borderRadius="lg"
+                overflow="hidden"
+                cursor="pointer"
+                onClick={() => openModal(post)}
+                _hover={{ boxShadow: 'lg' }}
+              >
+
+                {/* Post image box */}
+                <Box
+                  position="relative"
+                  p={2}
+                  mx="auto"
+                  mt={4}
+                  w={{ base: '100%', md: '369px' }}
+                  h={{ base: 'auto', md: '312px' }}
+                  overflow="hidden"
+                >
+                  <Image
+                    src={post.photo}
+                    alt={post.description}
+                    boxSize="100%"
+                    objectFit="cover"
+                    borderRadius="65px"
+                    loading="lazy"
+                  />
+                </Box>
+
+                {/* Spotted time text box */}
+                <Box p={4} textAlign="center">
+                  <Text fontSize="lg" color="white">
+                    <Text as="span" textDecoration="underline">
+                      Spotted:
+                    </Text>{' '}
+                    {formatPostedDate(post.postedDate)} By {post.username || 'Unknown'}
+                  </Text>
+                </Box>
+              </Box>
+            ))}
+          </Grid>
+        )}
+      </Box>
+
+      {selectedPost && <PostModal isOpen={isOpen} onClose={closeModal} post={selectedPost} showMap={true} />}
+    </Flex>
+  );
 };
 
 export default Home;
-

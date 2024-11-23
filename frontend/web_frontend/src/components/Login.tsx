@@ -115,7 +115,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToSignUp, onSwitchToForgotPasswor
         setSuccessMessage(result.error)
         const user = { firstName: result.firstName, lastName: result.lastName, id: result.id };
         localStorage.setItem('user_data', JSON.stringify(user));
-        navigate('/test', { replace: true });
+        navigate('/home', { replace: true });
       } else {
         setFormErrors((prev) => ({
           ...prev,
