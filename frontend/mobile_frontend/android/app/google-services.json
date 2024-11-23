@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "449355917261",
+    "project_id": "cop4331-animal",
+    "storage_bucket": "cop4331-animal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449355917261:android:918b0e092e2aae93ab4684",
+        "android_client_info": {
+          "package_name": "com.cop4331.animal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVvThBipS7uAAnHsSO6UiZvqqPodazyQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449355917261:android:37109ae6f729f509ab4684",
+        "android_client_info": {
+          "package_name": "com.cop4331.animaltracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVvThBipS7uAAnHsSO6UiZvqqPodazyQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

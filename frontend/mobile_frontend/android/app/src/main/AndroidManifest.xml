@@ -30,9 +30,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCbb-qIe0NLiJpeDa_WmgPiqL-E1y2kL2Q"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -45,7 +42,4 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
-    <!--added to access camera and photo library-->
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>

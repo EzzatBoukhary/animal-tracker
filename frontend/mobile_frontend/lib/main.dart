@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_frontend/map_page.dart';
+import 'package:mobile_frontend/posts_page.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 import 'create_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'UCF Animal Tracker',
+        title: 'Campus Critters',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFFC904)),
           appBarTheme: AppBarTheme(
@@ -32,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         home: Consumer<MyAppState>(
           builder: (context, appState, _) {
-            return appState.isLoggedIn ? MyHomePage(title: 'UCF Animal Tracker') : LoginPage();
+            return appState.isLoggedIn ? MyHomePage(title: 'Campus Critters') : LoginPage();
           },
         ),
       ),
@@ -41,7 +46,20 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  bool _isLoggedIn = false;
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  bool _isLoggedIn = true;//CHANGE THIS TO FALSE BEFORE COMPLETEION
+  //ONLY THIS WAY FOR BUILDING
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
+  //****************************************************************** */
 
   bool get isLoggedIn => _isLoggedIn;
 
@@ -70,26 +88,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
+  // Method to update selected index
+  void updateSelectedIndex(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = Placeholder();
-        break;
+        page = PostsPage();
+        //break;
       case 1:
         page = CreatePage();
-        break;
+        //break;
       case 2:
-        page = Placeholder();
-        break;
+        page = MapPage();
+        //break;
       default:
         throw UnimplementedError('No widget for $selectedIndex');
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          "Campus Critter's"
+        ),
         backgroundColor: const Color(0xFFFFC904),
         actions: [
           IconButton(
@@ -109,14 +136,34 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFFFFC904),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Posts'),
-          BottomNavigationBarItem(icon: Icon(Icons.create), label: 'Create Post'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined), 
+            activeIcon: Icon(Icons.home),
+            label: 'Posts'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.create_outlined), 
+            activeIcon: Icon(Icons.create),
+            label: 'Create Post'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined), 
+            activeIcon: Icon(Icons.map), 
+            label: 'Map'
+          ),
         ],
         currentIndex: selectedIndex,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey.shade700,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.normal,
+        ),
         onTap: (index) {
           setState(() {
-            selectedIndex = index;
+            selectedIndex = index; // Update selected index here
           });
         },
       ),

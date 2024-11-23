@@ -330,6 +330,69 @@ app.get('/api/getUserPosts/:userId', async (req, res) => {
     }
 });
 
+//used on mobile to take stress of pagination off mobile hardware 
+app.get('/api/getPostsMobile', async (req, res) => {
+    /*
+        How to test on Postman
+        URl: http://localhost:5000/api/getPostsMobile
+        Dropdown: GET
+        Params: key: Page value: 1
+                key: limit value: 10
+        Headers: Content-type application/json
+    */
+    
+    const { page = 1, limit = 10 } = req.query; // Get page and limit from query parameters, with defaults
 
+    try {
+        console.log("Received request to /api/getPosts"); // Log when the endpoint is hit
+
+        const posts = await db.collection('Posts').aggregate([
+            // Your aggregation pipeline here
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'userId',
+                    foreignField: 'UserId',
+                    as: 'userDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$userDetails",
+                    preserveNullAndEmptyArrays: false // Remove posts with no matching user
+                }
+            },
+            {
+                $project: {
+                    username: '$userDetails.Login',
+                    location: 1,
+                    photo: 1,
+                    description: 1,
+                    animal: 1,
+                    postedDate: 1
+                }
+            },
+            { $sort: { postedDate: -1 } }, // Sort posts by newest first
+            { $skip: (page - 1) * parseInt(limit) }, // Skip documents for pagination
+            { $limit: parseInt(limit) } // Limit the number of posts per page
+        ]).toArray();
+
+        // Get the total number of posts for pagination purposes
+        const totalPosts = await db.collection('Posts').countDocuments();
+
+        console.log("Fetched posts:", posts); // Log the posts fetched from the database
+
+        res.status(200).json({
+            success: true,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPosts,
+            posts,
+        });
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch posts' });
+    }
+});
 
 app.listen(5000); // start Node + Express server
