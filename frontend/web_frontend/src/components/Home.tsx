@@ -4,6 +4,7 @@ import { Post } from '../types';
 import PostModal from '../components/PostModal';
 import Filters from '../components/Filters';
 import { formatPostedDate } from '../utils/dateUtils';
+import { buildPath } from '../utils/api';
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,15 +14,15 @@ const Home: React.FC = () => {
 
   const isSticky = useBreakpointValue({ base: false, md: true });
 
-  const animalFilters = ['Squirrel', 'Cat', 'Bird', 'Rabbit', 'Elephant', 'Lion', 'Tiger'];
+  const animalFilters = ['Squirrel', 'Cat', 'Bird', 'Rabbit', 'Dog', 'Alligator', 'Deer'];
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        let url = 'http://localhost:5000/api/getPosts';
+        let url = buildPath('getPosts');
         if (selectedAnimals.length > 0) {
-          const animalsQuery = selectedAnimals.join(',');
-          url += `?animals=${encodeURIComponent(animalsQuery)}`;
+          const animal = selectedAnimals[0];
+          url = buildPath(`searchPosts?animal=${animal}`);
         }
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch posts');
@@ -46,13 +47,7 @@ const Home: React.FC = () => {
   };
 
   const handleSelectFilter = (animal: string) => {
-    if (!selectedAnimals.includes(animal)) {
-      setSelectedAnimals([...selectedAnimals, animal]);
-    }
-  };
-
-  const handleDeselectFilter = (animal: string) => {
-    setSelectedAnimals(selectedAnimals.filter((a) => a !== animal));
+    setSelectedAnimals([animal]);
   };
 
   const handleClearFilters = () => {
@@ -73,7 +68,6 @@ const Home: React.FC = () => {
           animals={animalFilters}
           selectedAnimals={selectedAnimals}
           onSelect={handleSelectFilter}
-          onDeselect={handleDeselectFilter}
           onClear={handleClearFilters}
         />
       </Box>
@@ -84,8 +78,6 @@ const Home: React.FC = () => {
         ) : (
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
             {posts.map((post) => (
-
-              // Post item box
               <Box
                 key={post._id}
                 borderWidth="1px"
@@ -95,8 +87,6 @@ const Home: React.FC = () => {
                 onClick={() => openModal(post)}
                 _hover={{ boxShadow: 'lg' }}
               >
-
-                {/* Post image box */}
                 <Box
                   position="relative"
                   p={2}
@@ -115,8 +105,6 @@ const Home: React.FC = () => {
                     loading="lazy"
                   />
                 </Box>
-
-                {/* Spotted time text box */}
                 <Box p={4} textAlign="center">
                   <Text fontSize="lg" color="white">
                     <Text as="span" textDecoration="underline">
