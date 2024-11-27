@@ -73,6 +73,8 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             bg='brightGold'
             w={{ base: 'full', md: 40 }}
             pos="fixed"
+            //PROPOSED CHANGE
+            left={'0'}
             h="full"
             {...rest}>
             <CloseButton color='black' display={{ base: 'flex', md: 'none' }} onClick={onClose} />
@@ -137,7 +139,8 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => {
             top="0"
             left={{ base: '0', md: '0' }}
             right="0"
-            height="20"
+            //CHANGE HERE
+            height="14vh"
             alignItems="center"
             bg='brightGold'
             justifyContent={{ base: 'space-between', md: 'flex-end' }}
@@ -195,11 +198,16 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => {
                                 </Box> */}
                             </HStack>
                         </MenuButton>
-                        <MenuList
-                            borderColor='gray.700'>
-                            <MenuItem>Profile</MenuItem>
+                        <MenuList borderColor="gray.700">
+                            {/* Profile Button */}
+                            <MenuItem onClick={() => (window.location.href = '/profile')}>
+                                Profile
+                            </MenuItem>
                             <MenuDivider />
-                            <MenuItem>Sign out</MenuItem>
+                            {/* Sign out Button */}
+                            <MenuItem onClick={() => (window.location.href = '/')}>
+                                Sign out
+                            </MenuItem>
                         </MenuList>
                     </Menu>
                 </Flex>
