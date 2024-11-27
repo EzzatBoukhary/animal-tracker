@@ -1,17 +1,15 @@
 import Map from '../components/Map.tsx';
-import PageTitle from '../components/PageTitle';
-import LoggedInName from '../components/LoggedInName';
-import MapButtons from '../components/MapButtons';
+import SidebarWithHeader from '../components/SidebarWithHeader.tsx';
 
 const MapPage = () =>
 {
     return(
         <div>
-            <PageTitle />
-            <LoggedInName />
-            <MapButtons />
-            <Map />
+            <SidebarWithHeader title={'Map'}>
+                <Map />
+            </SidebarWithHeader>
         </div>
     );
+
 };
 export default MapPage
