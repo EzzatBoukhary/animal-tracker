@@ -140,7 +140,7 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => {
             left={{ base: '0', md: '0' }}
             right="0"
             //CHANGE HERE
-            height="14vh"
+            height="10.2vh"
             alignItems="center"
             bg='brightGold'
             justifyContent={{ base: 'space-between', md: 'flex-end' }}

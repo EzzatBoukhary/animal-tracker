@@ -18,7 +18,7 @@ type Post = {
     userName: string; // optional, for displaying the post creator
 };
 
-const MapPage: React.FC = () => {
+const Map: React.FC = () => {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -132,4 +132,4 @@ const MapPage: React.FC = () => {
   );
 };
 
-export default MapPage;
+export default Map;

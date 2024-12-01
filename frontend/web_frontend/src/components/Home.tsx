@@ -14,7 +14,7 @@ const Home: React.FC = () => {
 
   const isSticky = useBreakpointValue({ base: false, md: true });
 
-  const animalFilters = ['Squirrel', 'Cat', 'Bird', 'Rabbit', 'Dog', 'Alligator', 'Deer'];
+  const animalFilters = ['Cat', 'Deer', 'Raccoon', 'Squirrel', 'Bird', 'Reptile', 'Fish', 'Bug', 'Other'];
 
   useEffect(() => {
     const fetchPosts = async () => {
