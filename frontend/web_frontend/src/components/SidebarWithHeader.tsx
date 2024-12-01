@@ -140,20 +140,10 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => {
             top="0"
             left={{ base: '0', md: '0' }}
             right="0"
-            height="20"
-            alignItems="center"
-            bg='brightGold'
-            justifyContent={{ base: 'space-between', md: 'flex-end' }}
-
-            /*position="fixed"
-            top="0"
-            left={{ base: '0', md: '0' }}
-            right="0"
-            //CHANGE HERE
             height="10.2vh"
             alignItems="center"
             bg='brightGold'
-            justifyContent={{ base: 'space-between', md: 'flex-end' }}*/
+            justifyContent={{ base: 'space-between', md: 'flex-end' }}
             px={{ base: 4, md: 4 }}
             zIndex="1000" // stays above other elements
             {...rest}>
