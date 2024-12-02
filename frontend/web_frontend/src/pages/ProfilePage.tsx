@@ -1,16 +1,14 @@
-import PageTitle from '../components/PageTitle';
-import LoggedInName from '../components/LoggedInName';
+
 import Profile from '../components/Profile';
-import ProfileButtons from '../components/ProfileButtons';
-const HomePage = () =>
+import SidebarWithHeader from '../components/SidebarWithHeader';
+const ProfilePage = () =>
 {
 return(
     <div>
-        <PageTitle />
-        <LoggedInName />
-        <ProfileButtons />
-        <Profile />
+        <SidebarWithHeader title={'Profile'}>
+            <Profile />
+        </SidebarWithHeader>
     </div>
 );
 }
-export default HomePage;
+export default ProfilePage;
