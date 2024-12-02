@@ -1,15 +1,14 @@
 import PageTitle from '../components/PageTitle';
-import LoggedInName from '../components/LoggedInName';
-import NewPost from '../components/NewPost'
+import NewPost from '../components/NewPost';
+import SidebarWithHeader from '../components/SidebarWithHeader';
 
-const CreatePost = () =>
-{
-return(
-<div>
-<PageTitle />
-<LoggedInName />
-<NewPost />
-</div>
-);
+const CreatePost = () => {
+    return(
+        <div>
+            <SidebarWithHeader title={'New Post'}>
+                <NewPost />
+            </SidebarWithHeader>
+        </div>
+    );
 }
 export default CreatePost;
