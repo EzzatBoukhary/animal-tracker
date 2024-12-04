@@ -9,7 +9,7 @@ import {
     useBreakpointValue,
 } from '@chakra-ui/react';
 import { Post } from '../types'; // Define or import the Post type
-import PostModal from '../components/PostModal'; // Modal component for detailed post view
+import ProfilePostModal from '../components/ProfilePostModal'; // Modal component for detailed post view
 import Filters from '../components/Filters'; // Component for animal filters
 import { formatPostedDate } from '../utils/dateUtils'; // Utility for formatting dates
 import { buildPath } from '../utils/api'; // Utility for API paths
@@ -32,7 +32,7 @@ const Profile: React.FC = () => {
     const animalFilters = ['Squirrel', 'Cat', 'Bird', 'Rabbit', 'Dog', 'Alligator', 'Deer'];
 
     // Fetch user posts
-    useEffect(() => {
+    /*useEffect(() => {
         const fetchUserPosts = async () => {
             try {
                 const response = await fetch(buildPath(`getUserPosts/${userId}`));
@@ -54,9 +54,9 @@ const Profile: React.FC = () => {
         } else {
             setFilteredPosts(posts); // Show all posts if no filters are selected
         }
-    }, [selectedAnimals, posts]);
+    }, [selectedAnimals, posts]);*/
 
-    /*useEffect(() => {
+    useEffect(() => {
         const fetchUserPosts = async () => {
             try {
                 const response = await fetch(`http://localhost:5000/api/getUserPosts/${userId}`);
@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
         };
 
         fetchUserPosts();
-    }, [userId]);*/
+    }, [userId]);
 
     const openModal = (post: Post) => {
         setSelectedPost(post);
@@ -89,6 +89,26 @@ const Profile: React.FC = () => {
 
     const handleClearFilters = () => {
         setSelectedAnimals([]);
+    };
+
+    const deletePost = async (postId: string) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/deletePost/${postId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete post');
+            }
+
+            // Update state to remove the deleted post
+            setPosts(posts.filter((post) => post._id !== postId));
+
+            console.log('Post deleted successfully');
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            throw error; // Rethrow the error for the `PostModal` to handle
+        }
     };
 
     return (
@@ -139,14 +159,62 @@ const Profile: React.FC = () => {
                         </Grid>
                     )}
                 </Box>
+
+                <Box flex="1">
+        {posts.length === 0 ? (
+          <Text>No posts found for the selected filters.</Text>
+        ) : (
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
+            {posts.map((post) => (
+              <Box
+                key={post._id}
+                borderWidth="1px"
+                borderRadius="lg"
+                overflow="hidden"
+                cursor="pointer"
+                onClick={() => openModal(post)}
+                _hover={{ boxShadow: 'lg' }}
+              >
+                <Box
+                  position="relative"
+                  p={2}
+                  mx="auto"
+                  mt={4}
+                  w={{ base: '100%', md: '369px' }}
+                  h={{ base: 'auto', md: '312px' }}
+                  overflow="hidden"
+                >
+                  <Image
+                    src={post.photo}
+                    alt={post.description}
+                    boxSize="100%"
+                    objectFit="cover"
+                    borderRadius="65px"
+                    loading="lazy"
+                  />
+                </Box>
+                <Box p={4} textAlign="center">
+                  <Text fontSize="lg" color="white">
+                    <Text as="span" textDecoration="underline">
+                      Spotted:
+                    </Text>{' '}
+                    {formatPostedDate(post.postedDate)} 
+                  </Text>
+                </Box>
+              </Box>
+            ))}
+          </Grid>
+        )}
+      </Box>
     
                 {/* Post Modal */}
                 {selectedPost && (
-                    <PostModal
+                    <ProfilePostModal
                         isOpen={isOpen}
                         onClose={closeModal}
                         post={selectedPost}
                         showMap={true}
+                        onDelete={deletePost}
                     />
                 )}
             </Flex>
