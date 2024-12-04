@@ -162,7 +162,7 @@ const Profile: React.FC = () => {
 
                 <Box flex="1">
         {posts.length === 0 ? (
-          <Text>No posts found for the selected filters.</Text>
+          <Text>No posts found.</Text>
         ) : (
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
             {posts.map((post) => (
