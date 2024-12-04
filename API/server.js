@@ -55,9 +55,17 @@ app.post('/api/login', async (req, res, next) =>
     const results = await db.collection('Users').findOne({ Login: login, Password: password });
 
     if (results) {
-        id = results.UserId;
-        fn = results.FirstName;
-        ln = results.LastName;
+        if (results.isVerified) {
+             id = results.UserId;
+            fn = results.FirstName;
+            ln = results.LastName;
+        } else {
+            error = 'User account is not verified.';
+        }
+    }
+    else
+    {
+        error = 'Invalid user name/password';
     }
     else
     {
