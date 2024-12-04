@@ -59,7 +59,8 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserPosts = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/getUserPosts/${userId}`);
+                //const response = await fetch(`http://localhost:5000/api/getUserPosts/${userId}`);
+                const response = await fetch(buildPath(`getUserPosts/${userId}`))
                 if (!response.ok) throw new Error('Failed to fetch user posts');
 
                 const data = await response.json();
@@ -93,7 +94,8 @@ const Profile: React.FC = () => {
 
     const deletePost = async (postId: string) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/deletePost/${postId}`, {
+            //const response = await fetch(`http://localhost:5000/api/deletePost/${postId}`, {
+            const response = await fetch(buildPath(`deletePost/${postId}`),{
                 method: 'DELETE',
             });
 
