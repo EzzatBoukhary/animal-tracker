@@ -70,9 +70,9 @@ All API endpoints, their usage, and example requests are detailed there.
 
 | Name                | Role                                              |
 |---------------------|---------------------------------------------------|
-| **Ezzat Boukhary**  | Project Manager & Web Frontend Developer (React)  |
-| **Harper Archambault** | API Developer & Frontend Support                |
-| **Justin Rimmeli**  | Figma Designer & Frontend Support                 |
+| **Ezzat Boukhary**  | Project Manager & Web Frontend Developer  |
+| **Harper Archambault** | API Developer & Frontend                |
+| **Justin Rimmeli**  | Figma Designer & Frontend                 |
 | **Noah Elder**      | Database Designer & API Support                   |
 | **Ericka Price**    | Mobile Developer (Flutter)                        |
 
